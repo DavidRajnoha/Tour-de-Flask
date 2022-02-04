@@ -1,0 +1,1 @@
+web: waitress-serve tourdeflask.app:app
