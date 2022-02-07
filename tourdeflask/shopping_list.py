@@ -1,25 +1,11 @@
-# Import třídy Flask z knihovny flsk
-from flask import Flask, request, abort
-import os
-from . import db
+from flask import Blueprint, request, abort
 
-# Vytvoření app objektu, který tvoří jádro naší aplikace
-# (Pro zajemce: wsgi aplikace)
-app = Flask(__name__)
-app.config.from_mapping(
-    DATABASE=os.path.join(app.instance_path, 'tourdeflask.sqlite'),
-)
+from tourdeflask import db
 
-# ensure the instance folder exists
-try:
-    os.makedirs(app.instance_path)
-except OSError:
-    pass
-
-db.init_app(app)
+bp = Blueprint('shopping-list', __name__, url_prefix='/shopping-list')
 
 
-@app.route('/shopping-list')
+@bp.route('/')
 def shopping_list():
     db_conn = db.get_db()
     items = db_conn.execute(
@@ -35,7 +21,7 @@ def shopping_list():
     return result
 
 
-@app.route('/shopping-list/item', methods=['POST'])
+@bp.route('/item', methods=['POST'])
 def create_item():
     name = request.form.get('name')
     quantity = request.form.get('quantity')
@@ -63,7 +49,7 @@ def get_item(item_id: int):
     return item
 
 
-@app.route('/shopping-list/item/<item_id>', methods=['PUT'])
+@bp.route('/item/<item_id>', methods=['PUT'])
 def update_item(item_id):
     item = get_item(item_id)
 
@@ -80,7 +66,7 @@ def update_item(item_id):
     return f'The item {name} has been inserted {quantity}-times'
 
 
-@app.route('/shopping-list/item/<item_id>', methods=['DELETE'])
+@bp.route('/item/<item_id>', methods=['DELETE'])
 def delete_item(item_id):
     # kontroluje, jestli item_id opravdu existuje
     item = get_item(item_id)
@@ -93,10 +79,3 @@ def delete_item(item_id):
     db_conn.commit()
 
     return f'The record [{item_id}; {item["name"]}; {item["quantity"]}] has been deleted'
-
-
-# Při zadání 127.0.0.1:5000/ se spustí funkce hello. V tomto kontextu se o ní bavíme jako o view.
-@app.route('/hello')
-def hello():
-    return 'Welcome to Tour de Flask!\nThe tour will start on 1st July 2022'
-

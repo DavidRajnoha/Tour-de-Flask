@@ -2,14 +2,15 @@ import os
 import tempfile
 
 import pytest
-from tourdeflask.app import app
+from tourdeflask import create_app
 from tourdeflask.db import init_db, get_db
 
 
 @pytest.fixture(scope="function")
 def client():
     db_fd, db_path = tempfile.mkstemp()
-    app.config.from_mapping({'TESTING': True, 'DATABASE': db_path})
+
+    app = create_app({'TESTING': True, 'DATABASE': db_path})
 
     with app.test_client() as client:
         with app.app_context():

@@ -1,1 +1,1 @@
-web: gunicorn tourdeflask.app:app
+web: gunicorn "tourdeflask:create_app()"
