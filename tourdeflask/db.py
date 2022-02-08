@@ -1,41 +1,15 @@
+import logging
+
 import click
-from flask import current_app, g
+from flask_sqlalchemy import SQLAlchemy
 from flask.cli import with_appcontext
 
-import sqlite3
-
-
-def get_db():
-    """
-    funkce, která vytvoří spojení s databází, pokud takové ještě neexistuje a není uložené
-    v g - globálním kontextu aplikace, unikátním pro každý request
-    """
-    if 'db' not in g:
-        g.db = sqlite3.connect(
-            current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
-        )
-        g.db.row_factory = sqlite3.Row
-
-    return g.db
-
-
-def close_db(e=None):
-    """
-    Zavře spojení s databází, pokud bylo vytvořeno
-    :param e:
-    """
-    db = g.pop('db', None)
-
-    if db is not None:
-        db.close()
+db = SQLAlchemy()
 
 
 def init_db():
-    db = get_db()
-
-    with current_app.open_resource('schema.sql') as f:
-        db.executescript(f.read().decode('utf8'))
+    db.drop_all()
+    db.create_all()
 
 
 # definujeme příkaz příkazové řádky
@@ -51,10 +25,16 @@ def init_db_command():
 
 def init_app(app):
     """
-    Nastaví automatické odstranění databáze po skončení requestu a
-    přidá
+    Prováže db s app
+    db tím získá přístup ke konfiguracím, které
+    se nacházejí v app
     :param app:
     :return:
     """
-    app.teardown_appcontext(close_db)
+    db.init_app(app)
     app.cli.add_command(init_db_command)
+
+    if 'PLATFORM' in app.config and app.config['PLATFORM'] == 'heroku':
+        app.app_context().push()
+        init_db()
+        logging.info("Initialized the db")

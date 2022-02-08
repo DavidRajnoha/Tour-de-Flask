@@ -1,7 +1,0 @@
-DROP TABLE IF EXISTS items;
-
-CREATE TABLE item (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  quantity integer NOT NULL
-);
