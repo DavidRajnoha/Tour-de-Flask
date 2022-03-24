@@ -3,7 +3,8 @@ import os
 
 from flask import Flask
 
-from . import shopping_list, db
+from . import db
+from .blueprints import shopping_list, user
 
 
 def create_app(test_config=None):
@@ -31,6 +32,7 @@ def create_app(test_config=None):
     def hello():
         return 'Welcome to Tour de Flask!\nThe tour will start on 1st July 2022'
 
-    app.register_blueprint(shopping_list.bp)
+    app.register_blueprint(shopping_list.bp_lists)
+    app.register_blueprint(user.bp)
 
     return app
