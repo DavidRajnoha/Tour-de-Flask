@@ -34,7 +34,7 @@ def init_app(app):
     db.init_app(app)
     app.cli.add_command(init_db_command)
 
-    if app.config['PLATFORM'] == 'heroku':
+    if 'PLATFORM' in app.config and app.config['PLATFORM'] == 'heroku':
         app.app_context().push()
         init_db()
         logging.info("Initialized the db")
